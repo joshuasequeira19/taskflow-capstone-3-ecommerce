@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shopfront</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="page-head">
+    <div class="brand">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.3 2.3a1 1 0 0 0 .7 1.7H17"></path>
+        <circle cx="9" cy="20" r="1"></circle>
+        <circle cx="17" cy="20" r="1"></circle>
+      </svg>
+      <span class="brand-name">Shopfront</span>
+    </div>
+    <button type="button" class="cart-btn" id="cart-btn">
+      Cart
+      <span class="cart-count" id="cart-count">0</span>
+    </button>
+  </header>
+
+  <p class="tagline">A small catalog, carried by real things, not decoration.</p>
+
+  <div class="filter-row" id="filter-row"></div>
+
+  <div id="error"></div>
+  <div id="product-grid" class="product-grid"></div>
+
+  <div class="cart-overlay" id="cart-overlay"></div>
+  <aside class="cart-panel" id="cart-panel">
+    <div class="cart-panel-head">
+      <h2>Your cart</h2>
+      <button type="button" class="icon-btn" id="cart-close">Close</button>
+    </div>
+    <div id="cart-items" class="cart-items"></div>
+    <div class="cart-footer">
+      <div class="cart-total-row">
+        <span>Total</span>
+        <span id="cart-total">$0.00</span>
+      </div>
+      <input type="text" id="customer-name" placeholder="Your name" autocomplete="off" />
+      <button type="button" id="checkout-btn">Place order</button>
+    </div>
+  </aside>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
