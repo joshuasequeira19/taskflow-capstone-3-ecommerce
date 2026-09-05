@@ -1,71 +1,78 @@
-# Capstone 3 · Grading Rubric (Shopfront)
+# Capstone 3 · Self-Check (Shopfront)
 
-Read this before you start, not after you submit: it tells you exactly what "done" means.
-Each section is pass/fail. All **Required** sections must pass for the capstone to count as
-complete; **Bonus** items don't block completion but show extra initiative.
+Use this as you build, not just at the end: after each step in `BRIEF.md`, come back and
+tick off what it should have produced. If something's unchecked, that's exactly where to
+stop and fix it before moving on.
 
-## Terraform basics (Required)
+## Terraform basics
 
 - [ ] `terraform validate` passes with no errors.
 - [ ] `terraform plan` against the current state produces a clean, readable plan (no
       unexplained changes).
-- [ ] No `.tf` file contains a hardcoded AWS access key, secret key, or database password.
+- [ ] No `.tf` file or `userdata.sh.tpl` contains a hardcoded database password; it comes
+      from `var.db_password` everywhere.
 
-## Networking (Required)
+## Networking
 
 - [ ] A custom VPC is defined in Terraform (verify: not the account's default VPC).
 - [ ] Public and private subnets exist across 2 Availability Zones, all as Terraform
       resources.
 - [ ] An Internet Gateway and correct route tables exist, all as Terraform resources.
 
-## Compute and database (Required)
+## Compute and database
 
 - [ ] An `aws_instance` resource defines the EC2 instance running the app.
 - [ ] An `aws_db_instance` resource defines the RDS PostgreSQL database in a private
-      subnet, not publicly accessible.
+      subnet, `publicly_accessible = false`.
+- [ ] `skip_final_snapshot = true` is set on the RDS resource. If this is missing,
+      `terraform destroy` will fail on the database step, this is worth checking before
+      you're relying on `destroy` actually working.
+- [ ] The `aws_instance` resource has `depends_on = [aws_db_instance.main]` (or
+      equivalent), so `user_data` can't run before RDS is ready.
 - [ ] Security groups are defined as Terraform resources and follow least privilege (DB
       only reachable from the app's security group).
 
-## Zero manual steps (Required)
+## Zero manual steps, the real test
 
 - [ ] Starting from `terraform destroy` (nothing exists), running `terraform apply` alone
-      results in a fully working, publicly reachable app, verified by actually doing this,
-      not by reading the configuration and assuming it works.
-- [ ] No manual SSH session was used to get the app running. `user_data` (or an equivalent
-      Terraform-driven mechanism) did that work.
+      results in a fully working, publicly reachable app. Do this for real, don't just
+      read the configuration and assume it works.
+- [ ] No manual SSH session was used to get the app running. `user_data` did that work.
 
-## State management (Required)
+## State management
 
-- [ ] Terraform state is stored in an S3 backend, not as a local file.
-- [ ] No `.tfstate`, `.tfstate.backup`, or secret-containing `.tfvars` file is committed to
-      the repository (check the full commit history, not just the current tree).
+- [ ] Terraform state is stored in the S3 backend from Step 1, not as a local file.
+- [ ] No `.tfstate`, `.tfstate.backup`, or `.tfvars` file is committed to the repository
+      (check the full commit history, not just the current tree, since a file removed
+      after being committed once is still exposed).
+- [ ] `.terraform.lock.hcl` **is** committed. Unlike the files above, this one is meant to
+      be tracked, it pins your provider versions so a re-`init` months from now doesn't
+      silently pull something different.
 
-## Teardown (Required)
+## Teardown
 
-- [ ] `terraform destroy` removes every resource it created, verified by an actual resource
-      sweep afterward (e.g. `aws resourcegroupstaggingapi get-resources`) showing nothing
-      left from this capstone.
+- [ ] `terraform destroy` removes every resource it created, verified by an actual
+      resource sweep afterward (`aws resourcegroupstaggingapi get-resources`) showing
+      nothing left from this capstone.
+- [ ] The S3 state bucket was deleted separately afterward, `terraform destroy` doesn't
+      touch it, so it's easy to forget.
 
-## Functionality (Required)
+## Functionality
 
-- [ ] The product catalog loads and displays real seeded data from the database.
-- [ ] Adding items to the cart and placing an order via the UI works end to end
-      (`POST /orders` succeeds and stock decrements correctly).
+- [ ] The product catalog loads and displays the real seeded data.
+- [ ] Adding items to the cart and placing an order works end to end (`POST /orders`
+      succeeds and stock decrements correctly).
 - [ ] `GET /health` returns `200` without needing the database to be reachable.
 
-## Submission (Required)
+## Before you tear it down
 
-- [ ] Public URL provided and reachable at review time.
-- [ ] Repository link provided, containing the actual `.tf` files used.
-- [ ] A clean `terraform plan` output provided, taken after `apply` succeeded.
-- [ ] Written summary submitted, describing the configuration structure and at least one
-      real problem solved along the way.
+- [ ] Take a screenshot or note the public URL working, for your own portfolio record.
+- [ ] Save a clean `terraform plan` output (no changes) somewhere, it's good evidence the
+      configuration actually matches reality.
 
-## Bonus (not required)
+## Worth trying if you want the extra practice
 
 - [ ] DynamoDB-based state locking added on top of the S3 backend.
-- [ ] Configuration is split into reusable modules instead of one flat set of files.
-- [ ] Variables and outputs are used cleanly (e.g. the app's public URL is a Terraform
-      output, not something the student has to look up manually).
-- [ ] A `terraform fmt` and `terraform validate` check is wired into a simple pre-commit
-      hook or CI check.
+- [ ] Configuration split into reusable modules instead of one flat set of files.
+- [ ] A `terraform fmt` and `terraform validate` check wired into a simple pre-commit hook
+      or CI check.
